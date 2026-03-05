@@ -103,7 +103,7 @@ select_asset = st.sidebar.multiselect(
 weights = []
 if select_asset:
     for asset in select_asset:
-        w = st.sidebar.number_input(f'Peso: {asset}', 0.0, 1.0, 1.0/len(select_asset), 0.05)
+        w = st.sidebar.number_input(f'Peso: {asset}', min_value=0.0, max_value=1.0, value=float(1.0/len(select_asset)), step=0.01)
         weights.append(w)
     
     total_w = sum(weights)
@@ -145,3 +145,4 @@ if run_allowed:
         st.pyplot(fig)
 else:
     st.warning("La somma dei pesi deve essere 100%.")
+

@@ -13,10 +13,12 @@ st.set_page_config(layout="wide")
 # --- CARICAMENTO DATI ---
 @st.cache_data
 def load_data():
-    # Carichiamo entrambi i dataset
-    df_ret_monthly = pd.read_csv('returns_monthly.csv', index_col=0, parse_dates=True)
+    # Carichiamo i dataset necessari
     df_ret_daily = pd.read_csv('returns_daily.csv', index_col=0, parse_dates=True)
     df_rate = pd.read_csv('rates_monthly.csv', index_col=0, parse_dates=True)
+    
+    # Resample dei rendimenti giornalieri in mensili per lo Stress Test
+    df_ret_monthly = df_ret_daily.resample('ME').apply(lambda x: (1 + x).prod() - 1)
     
     if df_rate.iloc[:, 0].abs().mean() > 0.1:
         df_rate = df_rate / 100
@@ -36,21 +38,17 @@ class StressTesting:
         self.vols = None
 
     def calculate_betas(self):
-        # 1. Normalizziamo gli indici temporali per essere sicuri che coincidano (solo Anno-Mese)
         returns_tmp = self.returns.copy()
         rates_tmp = self.rates.copy()
         
         returns_tmp.index = returns_tmp.index.to_period('M')
         rates_tmp.index = rates_tmp.index.to_period('M')
 
-        # 2. Uniamo i dati basandoci sul periodo mensile
         data_joined = pd.concat([returns_tmp, rates_tmp], axis=1).dropna()
         
-        # 3. Filtriamo per le date richieste (usando stringhe di periodo)
         try:
             periodo_shock = data_joined.loc['2021-01':'2024-01']
         except KeyError:
-            # Se le date specifiche falliscono, prendiamo l'intersezione disponibile
             periodo_shock = data_joined
 
         if periodo_shock.empty:
@@ -176,7 +174,7 @@ class risk_spectral:
 st.sidebar.header("Selezione Portafoglio")
 select_asset = st.sidebar.multiselect(
     "Scegli gli ETF del tuo portafoglio",
-    options=df_ret_monthly.columns.tolist()
+    options=df_ret_daily.columns.tolist()
 )
 
 weights = []
@@ -309,5 +307,3 @@ with tab2:
 
     else:
         st.warning("Seleziona gli asset e imposta i pesi (100%) nella barra laterale per attivare l'analisi spettrale.")
-
-

@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import streamlit as st
+import plotly.graph_objects as go
 
 
 
@@ -56,17 +57,28 @@ class StressTest:
 
 
     def plot_distribution(self, mc_results):
-
         var_95 = np.percentile(mc_results, 5)
 
-        fig, ax = plt.subplots(figsize=(9, 5))
-        ax.hist(mc_results, bins=100, color='blue')
-        ax.axvline(var_95, color='black', linewidth=2, label='VaR 95%')
-        ax.set_title('Distribuzione dei rendimenti MonteCarlo')
-        ax.set_ylabel('Frequenza')
-        ax.set_xlabel('Rendimento (%)')
-        ax.legend()
+        fig = go.Figure()
 
+        fig.add_trace(go.Histogram(
+            x=mc_results,
+            nbinsx=100,
+            marker_color='#1f77b4',
+            opacity=0.75,
+            name='Rendimenti MC'
+        ))
+
+        # Linea VaR
+        fig.add_vline(x=var_95, line_dash='dash', line_color='red', annotation_text=f'VaR 95%: {var_95}', annotation_position='top left')
+
+        fig.update_layout(
+            title='Distribuzione dei Rendimenti Monte Carlo',
+            xaxis_title='Rendimento (%)',
+            yaxis_title='Frequenza',
+            template='plotly_dark',
+            bargap=0.1
+        )
         return fig
 
 
@@ -157,7 +169,7 @@ if st.sidebar.button('ESEGUI STRESS TEST'):
         m3.metric("Expected Shortfall", f'{es:.2f}%')
 
         st.divider()
-        st.pyplot(regression.plot_distribution(mc))
+        st.plotly_chart(regression.plot_distribution(mc), use_container_width=True)
 
 
         st.info("Il modello utilizza una regressione lineare (OLS) per stimare la sensibilità (Beta). Si riconosce che questo approccio approssima la convessità degli asset e assume che le correlazioni passate rimangano stabili durante lo shock.")

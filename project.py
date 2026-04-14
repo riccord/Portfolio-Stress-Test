@@ -45,7 +45,6 @@ class StressTest:
         results = []
 
         for _ in range(n_sim):
-            #dw = np.random.normal(0, 1, len(self.betas)) * vols_ann
             dw = np.random.standard_t(df=3, size=len(self.betas)) * vols_ann * np.sqrt((3-2)/3)
             
             # Rendimento = Beta*shock + dW
@@ -71,7 +70,7 @@ class StressTest:
         ))
 
         # Linea VaR
-        fig.add_vline(x=var_95, line_dash='dash', line_color='red', annotation_text=f'VaR 95%: {var_95}', annotation_position='top left')
+        fig.add_vline(x=var_95, line_dash='dash', line_color='red', annotation_text=f'VaR 95%: {var_95:.2f}', annotation_position='top left')
 
         fig.update_layout(
             title='Distribuzione dei Rendimenti Monte Carlo',

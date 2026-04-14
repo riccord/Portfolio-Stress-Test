@@ -45,8 +45,9 @@ class StressTest:
         results = []
 
         for _ in range(n_sim):
-            dw = np.random.normal(0, 1, len(self.betas)) * vols_ann
-
+            #dw = np.random.normal(0, 1, len(self.betas)) * vols_ann
+            dw = np.random.standard_t(df=3, size=len(self.betas)) * vols_ann * np.sqrt((3-2)/3)
+            
             # Rendimento = Beta*shock + dW
             rendimenti_asset = (betas_ann * (self.shock_tassi/100)) + dw
             port_return = np.sum(rendimenti_asset*self.weight)
